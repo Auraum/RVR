@@ -35,6 +35,11 @@ int main (int argc, char** argv){
 
     freeaddrinfo(res);
 
+    if(rc != 0){
+        std::cerr << "[bind] Fallido" << std::endl;
+        return -1;
+    }
+
     int bytesSent = 0;
 
     while(!salir){
