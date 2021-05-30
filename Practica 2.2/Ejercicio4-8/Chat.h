@@ -27,8 +27,6 @@
 class ChatMessage: public Serializable
 {
 public:
-    static const size_t MESSAGE_SIZE = sizeof(char) * 88 + sizeof(uint8_t);
-
     enum MessageType
     {
         LOGIN   = 0,
@@ -48,6 +46,10 @@ public:
 
     std::string nick;
     std::string message;
+
+    static const size_t NICK_LEN = 8;
+    static const size_t MESSAGE_LEN = 80;
+    static const size_t MESSAGE_SIZE = sizeof(char) * (NICK_LEN + MESSAGE_LEN) + sizeof(uint8_t);
 };
 
 // -----------------------------------------------------------------------------
