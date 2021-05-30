@@ -69,22 +69,25 @@ void ChatServer::do_messages()
         // - LOGOUT: Eliminar del vector clients
         // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
 
+        auto it = clients.begin();
         switch(cm.type){
             case ChatMessage::LOGIN:
                 clients.push_back(std::move(sockP));
                 std::cout << cm.nick << " logged in" << std::endl;
                 break;
             case ChatMessage::MESSAGE:
-                for(auto const& c :clients){
-                    if(c != sockP) socket.send(cm, *c);
+                while(it != clients.end()){
+                    if(!(**it == *sockP)) {
+                        socket.send(cm, **it);
+                    }
+                    it++;
                 }
                 break;
             case ChatMessage::LOGOUT:               
                 bool flag = false;
-                auto it = clients.begin();
                 while(!flag && it!=clients.end()){
                     if(**it == *sockP){
-                        clients.erase(it);
+                        it = clients.erase(it);
                         std::cout << cm.nick << " logged out" << std::endl;
                         flag = true;
                     }
@@ -123,7 +126,19 @@ void ChatClient::input_thread()
     while (true)
     {
         // Leer stdin con std::getline
-        // Enviar al servidor usando socket
+
+        std::string msg;
+        std::getline(std::cin, msg);
+        if(msg == "LOGOUT") {
+            logout();
+        }
+        else{
+            ChatMessage em(nick, msg);
+            em.type = ChatMessage::MESSAGE;
+
+            // Enviar al servidor usando socket
+            socket.send(em, socket);
+        }
     }
 }
 
@@ -133,6 +148,9 @@ void ChatClient::net_thread()
     {
         //Recibir Mensajes de red
         //Mostrar en pantalla el mensaje de la forma "nick: mensaje"
+        ChatMessage em;
+        socket.recv(em);
+        std::cout << em.nick << ": " << em.message << std::endl;
     }
 }
 
